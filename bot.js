@@ -1,14 +1,25 @@
-const TelegramBot = require('node-telegram-bot-api');
-const fetch = require('node-fetch');
 require('dotenv').config();
-const bot = new TelegramBot(process.env.BOT_TOKEN, {polling: true});
+const fetch = require('node-fetch');
+const TelegramBot = require('node-telegram-bot-api');
+const token = process.env.BOT_TOKEN;
 
 function formatCurrency(value) {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
 }
 
+let bot;
+
+if(process.env.NODE_ENV === 'production') {
+  bot = new TelegramBot(token);
+  bot.setWebHook(process.env.HEROKU_URL + bot.token);
+}
+else {
+  bot = new TelegramBot(token, { polling: true });
+}
+
+console.log('Bot server started in the ' + process.env.NODE_ENV + ' mode');
+
 bot.onText(/\/(.+)/, async (msg, match) => {
-  console.log(process.env)
   const chatId = msg.chat.id;
   bot.sendMessage(chatId, 'Pesquisando...');
   const resp = match[1]; // the captured "whatever"
@@ -28,3 +39,5 @@ bot.onText(/\/(.+)/, async (msg, match) => {
     Math.round(data.low24h) > 0 ? formatCurrency(data.low24h) : data.low24h
   }`);
 });
+
+module.exports = bot;
