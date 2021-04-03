@@ -37,7 +37,7 @@ bot.onText(/\/(.+)/, async (msg, match) => {
 
   bot.sendMessage(
     chatId,
-    `Último preço: ${lastPrice}\nPreço mais alto: ${hightPrice}\nPreço mais baixo: ${lowerPrice}\nA variação em 24h foi de ${percentRange}`
+    `Último preço: ${lastPrice}\nPreço mais alto: ${hightPrice}\nPreço mais baixo: ${lowerPrice}\nA variação em 24h foi de ${percentRange}%`
   );
 });
 
