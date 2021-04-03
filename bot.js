@@ -30,13 +30,15 @@ bot.onText(/\/(.+)/, async (msg, match) => {
   }
   const { data } = await response.json();
 
-  bot.sendMessage(chatId, `Último preço: ${
-    Math.round(data.lastPrice) > 0 ? formatCurrency(data.lastPrice) : data.lastPrice
-  }\nPreço mais alto: ${
-    Math.round(data.high24h) > 0 ? formatCurrency(data.high24h) : data.high24h
-  }\nPreço mais baixo: ${
-    Math.round(data.low24h) > 0 ? formatCurrency(data.low24h) : data.low24h
-  }`);
+  const lastPrice = Math.round(data.lastPrice) > 0 ? formatCurrency(data.lastPrice) : data.lastPrice;
+  const hightPrice = Math.round(data.high24h) > 0 ? formatCurrency(data.high24h) : data.high24h;
+  const lowerPrice = Math.round(data.low24h) > 0 ? formatCurrency(data.low24h) : data.low24h;
+  const percentRange = (((data.lastPrice * 100) / data.open24h) - 100).toFixed(2);
+
+  bot.sendMessage(
+    chatId,
+    `Último preço: ${lastPrice}\nPreço mais alto: ${hightPrice}\nPreço mais baixo: ${lowerPrice}\nA variação em 24h foi de ${percentRange}`
+  );
 });
 
 module.exports = bot;
