@@ -67,4 +67,9 @@ bot.onText(
   }
 );
 
+bot.onText(/brabo/,async (msg) => {
+  const chatId = msg.chat.id;
+  bot.sendMessage(chatId,'Carai esse bot do Kazushi é brabo mermo ein')
+})
+
 module.exports = bot;
