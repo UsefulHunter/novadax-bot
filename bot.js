@@ -1,10 +1,8 @@
-const fetch = require('node-fetch');
 const TelegramBot = require('node-telegram-bot-api');
+const fetch = require('node-fetch');
+const lodash = require('lodash');
 const token = process.env.BOT_TOKEN;
-
-function formatCurrency(value) {
-  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
-}
+const helpers = require('./helpers.js');
 
 let bot;
 
@@ -18,27 +16,55 @@ else {
 
 console.log('Bot server started in the ' + process.env.NODE_ENV + ' mode');
 
-bot.onText(/\/(.+)/, async (msg, match) => {
-  const chatId = msg.chat.id;
-  bot.sendMessage(chatId, 'Pesquisando...');
-  const resp = match[1]; // the captured "whatever"
-  const response = await fetch(`https://api.novadax.com/v1/market/ticker?symbol=${resp.toUpperCase()}_BRL`);
+bot.onText(
+  /\/percent/,
+  async (msg, match) => {
+    const chatId = msg.chat.id;
+    bot.sendMessage(chatId, 'Pesquisando...');
 
-  if (!response.ok) {
-    bot.sendMessage(chatId, 'Algo de errado aconteceu');
-    return;
+    const response = await fetch('https://api.novadax.com/v1/market/tickers');
+      if (!response.ok) {
+        bot.sendMessage(chatId, 'Algo de errado aconteceu');
+        return;
+      }
+      const { data } = await response.json();
+
+      const dataFormatted = data.slice(0, 27).reduce(function(acc, curr) {
+        return [...acc, { symbol: [curr.symbol.replace('_BRL', '')], value: helpers.format24hPercent(curr) * 100 }];
+      }, [])
+
+      const message = lodash.orderBy(dataFormatted, ['value'], ['desc']).reduce(function(acc, curr) {
+        return acc = `${acc}${curr.symbol}: ${curr.value/100}%\n`;
+      }, '')
+
+      bot.sendMessage(chatId, message);
   }
-  const { data } = await response.json();
+);
 
-  const lastPrice = Math.round(data.lastPrice) > 0 ? formatCurrency(data.lastPrice) : data.lastPrice;
-  const hightPrice = Math.round(data.high24h) > 0 ? formatCurrency(data.high24h) : data.high24h;
-  const lowerPrice = Math.round(data.low24h) > 0 ? formatCurrency(data.low24h) : data.low24h;
-  const percentRange = (((data.lastPrice * 100) / data.open24h) - 100).toFixed(2);
+bot.onText(
+  /\/(ADA|ada)|(BCH|bch)|(BNB|bnb)|(BRZ|brz)|(BSV|bsv)|(BTC|btc)|(BTT|btt)|(DAI|dai)|(DASH|dash)|(DCR|dbc)|(DGB|dgb)|(DOGE|doge)|(DOT|dot)|(EOS|eos)|(ETC|etc)|(ETH|eth)|(IOTA|iota)|(LINK|link)|(LTC|ltc)|(NULS|nuls)|(OMG|omg)|(TRX|trx)|(WAVES|waves)/,
+  async (msg, match) => {
+    const chatId = msg.chat.id;
+    bot.sendMessage(chatId, 'Pesquisando...');
+    const resp = match[0]; // the captured coin
+    const response = await fetch(`https://api.novadax.com/v1/market/ticker?symbol=${resp.toUpperCase()}_BRL`);
 
-  bot.sendMessage(
-    chatId,
-    `Último preço: ${lastPrice}\nPreço mais alto: ${hightPrice}\nPreço mais baixo: ${lowerPrice}\nA variação em 24h foi de ${percentRange}%`
-  );
-});
+    if (!response.ok) {
+      bot.sendMessage(chatId, 'Algo de errado aconteceu');
+      return;
+    }
+    const { data } = await response.json();
+
+    const lastPrice = Math.round(data.lastPrice) > 0 ? helpers.formatCurrency(data.lastPrice) : data.lastPrice;
+    const hightPrice = Math.round(data.high24h) > 0 ? helpers.formatCurrency(data.high24h) : data.high24h;
+    const lowerPrice = Math.round(data.low24h) > 0 ? helpers.formatCurrency(data.low24h) : data.low24h;
+    const percentRange = helpers.format24hPercent(data);
+
+    bot.sendMessage(
+      chatId,
+      `Último preço: ${lastPrice}\nPreço mais alto: ${hightPrice}\nPreço mais baixo: ${lowerPrice}\nA variação em 24h foi de ${percentRange}%`
+    );
+  }
+);
 
 module.exports = bot;
