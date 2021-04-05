@@ -29,7 +29,7 @@ bot.onText(
       }
       const { data } = await response.json();
 
-      const dataFormatted = data.slice(0, 27).reduce(function(acc, curr) {
+      const dataFormatted = data.filter((x) => x.symbol.includes('_BRL')).reduce(function(acc, curr) {
         return [...acc, { symbol: [curr.symbol.replace('_BRL', '')], value: helpers.format24hPercent(curr) * 100 }];
       }, [])
 
@@ -42,7 +42,7 @@ bot.onText(
 );
 
 bot.onText(
-  /\/(ADA|ada)|(BCH|bch)|(BNB|bnb)|(BRZ|brz)|(BSV|bsv)|(BTC|btc)|(BTT|btt)|(DAI|dai)|(DASH|dash)|(DCR|dbc)|(DGB|dgb)|(DOGE|doge)|(DOT|dot)|(EOS|eos)|(ETC|etc)|(ETH|eth)|(IOTA|iota)|(LINK|link)|(LTC|ltc)|(NULS|nuls)|(OMG|omg)|(TRX|trx)|(WAVES|waves)/,
+  /\/(ADA|ada)|(BCH|bch)|(BNB|bnb)|(BRZ|brz)|(BSV|bsv)|(BTC|btc)|(BTT|btt)|(DAI|dai)|(DASH|dash)|(DCR|dbc)|(DGB|dgb)|(DOGE|doge)|(DOT|dot)|(EOS|eos)|(ETC|etc)|(ETH|eth)|(IOTA|iota)|(LINK|link)|(LTC|ltc)|(NULS|nuls)|(OMG|omg)|(PUNDIX|pundix)|(TRX|trx)|(XRP|xrp)|(WAVES|waves)/,
   async (msg, match) => {
     const chatId = msg.chat.id;
     bot.sendMessage(chatId, 'Pesquisando...');
