@@ -67,9 +67,16 @@ bot.onText(
   }
 );
 
-bot.onText(/brabo/,async (msg) => {
+bot.onText(/\/brabo/,async (msg) => {
   const chatId = msg.chat.id;
   bot.sendMessage(chatId,'Carai esse bot do Kazushi é brabo mermo ein')
+})
+
+bot.onText(/\/glory/,async (msg) => {
+  const chatId = msg.chat.id;
+  bot.sendMessage(chatId,
+    `Último preço: R$150.00\nPreço mais alto: R$150.00\nPreço mais baixo: R$150.00\nA variação em 24h foi de 00%`
+    )
 })
 
 module.exports = bot;
